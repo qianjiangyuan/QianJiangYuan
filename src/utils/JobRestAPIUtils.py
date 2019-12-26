@@ -474,10 +474,10 @@ def SignUp(openId, group, nickName, userName, password, isAdmin = False, isAutho
                     groups = ['Other']
                 dataHandler.UpdateIdentityInfo(userName, accountInfo["uid"], gid, groups)
                 
-                # Update Ace
-                permission = Permission.Admin if isAdmin else (Permission.User if isAuthorized else Permission.Unauthorized)
-                resourceAclPath = AuthorizationManager.GetResourceAclPath("", ResourceType.Cluster)
-                AuthorizationManager.UpdateAce(userName, resourceAclPath, permission, False)
+                # Update Ace for Admin
+                if isAdmin:
+                    resourceAclPath = AuthorizationManager.GetResourceAclPath("", ResourceType.Cluster)
+                    AuthorizationManager.UpdateAce(userName, resourceAclPath, Permission.Admin, False)
 
         dataHandler.Close()
     except Exception as e:

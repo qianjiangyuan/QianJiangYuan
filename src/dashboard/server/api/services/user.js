@@ -122,32 +122,6 @@ class User extends Service {
     }
   }
 
-  async loginWithMicrosoft() {
-    const params = new URLSearchParams(Object.assign({
-      identityName: this.userName,
-      Alias: this.Alias,
-      Group: "Microsoft",
-      isAdmin: true,
-      isAuthorized: true
-    }))
-    const clusterId = clusterIds[0]
-    const response = await new Cluster(this.context, clusterId).fetch('/login?' + params)
-    return await response.json()
-  }
-  
-  async loginWithDingtalk() {
-    const params = new URLSearchParams(Object.assign({
-      identityName: this.userName,
-      Alias: this.Alias,
-      Group: "DingTalk",
-      isAdmin: false,
-      isAuthorized: false
-    }))
-    const clusterId = clusterIds[0]
-    const response = await new Cluster(this.context, clusterId).fetch('/login?' + params)
-    return await response.json()
-  }
-
   async getAccountInfo() {
     const params = new URLSearchParams(Object.assign({
       openId: this.openId,
@@ -170,15 +144,17 @@ class User extends Service {
     return data
   }
 
-  async signup(nickName, userName, password ) {
+  async signup(nickName, userName, password) {
+    const administrators = config.get('administrators') || []
+    const isAdmin = this.group === 'Microsoft' && administrators.includes(this.openId)
     const params = new URLSearchParams(Object.assign({
       openId: this.openId,
       group: this.group,
       nickName: nickName,
       userName: userName,
       password: password,
-      isAdmin: true,
-      isAuthorized: true
+      isAdmin: isAdmin,
+      isAuthorized: isAdmin
     }))
     const clusterId = clusterIds[0]
     const response = await new Cluster(this.context, clusterId).fetch('/SignUp?' + params)
