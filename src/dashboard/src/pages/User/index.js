@@ -98,7 +98,7 @@ export default class User extends React.Component {
                 <TableCell>{item.isAdmin ? '管理员' : (item.isAuthorized ? '用户' : '未认证')} </TableCell>
                 <TableCell>
                   <Button color="primary" onClick={() => this.updateUser(item)}>Modify</Button>
-                  <Button color="primary" component={Link} to={`/user/${this.context.selectedCluster}/${item.userName}`}>Access</Button>
+                  <Button color="primary" component={Link} to={`/user/access/${item.userName}`}>Access</Button>
                 </TableCell>
               </TableRow>
             ))}

@@ -5,7 +5,7 @@ import {
   Dialog, DialogActions, DialogContent, DialogTitle,
   Table,
   TableHead,
-  TableRow, TableCell, TableBody, Button, Grid, FormControl, InputLabel, Select, MenuItem, TextField,
+  TableRow, TableCell, TableBody, Button, Grid, FormControl, InputLabel, Select, MenuItem,
 } from "@material-ui/core";
 import axios from 'axios';
 import ClustersContext from "../../contexts/Clusters";
@@ -14,7 +14,6 @@ export default class Access extends React.Component {
   static contextType = ClustersContext
   constructor(props) {
     super(props)
-    this.cluster = props.match.params.clusterId
     this.identityName = props.match.params.identityName
     this.state = {
       vcList: [],
@@ -33,7 +32,7 @@ export default class Access extends React.Component {
   }
 
   getAccessList = () => {
-    axios.get(`/api/${this.cluster}/access/${this.identityName}`)
+    axios.get(`/api/${this.context.selectedCluster}/access/${this.identityName}`)
       .then((res) => {
         this.setState({
           accessList: res.data,
@@ -41,7 +40,7 @@ export default class Access extends React.Component {
       }, () => { })
   }
   getVcList = () => {
-    axios.get(`/api/${this.cluster}/listVc`)
+    axios.get(`/api/${this.context.selectedCluster}/listVc`)
       .then((res) => {
         this.setState({
           vcList: res.data.result,
@@ -89,9 +88,8 @@ export default class Access extends React.Component {
       alert(`请选择 resourceName`)
       return
     }
-    let url = `/api/${this.cluster}/updateAce?resourceType=${resourceType}&resourceName=${resourceName}&permissions=${permissions}&identityName=${this.identityName}`;
+    let url = `/api/${this.context.selectedCluster}/updateAce?resourceType=${resourceType}&resourceName=${resourceName}&permissions=${permissions}&identityName=${this.identityName}`;
     axios.get(url).then((res) => {
-      alert(`操作成功`)
       this.setState({ modifyFlag: false })
       this.getAccessList();
     }, (e) => {
@@ -109,7 +107,7 @@ export default class Access extends React.Component {
         resourceType = 2;
         resourceName = item.resource.split(':')[1];
       }
-      let url = `/api/${this.cluster}/deleteAce?resourceType=${resourceType}&resourceName=${resourceName}&identityName=${this.identityName}`;
+      let url = `/api/${this.context.selectedCluster}/deleteAce?resourceType=${resourceType}&resourceName=${resourceName}&identityName=${this.identityName}`;
       axios.get(url)
         .then((res) => {
           this.getAccessList();
@@ -162,18 +160,18 @@ export default class Access extends React.Component {
         <Table style={{ marginTop: 20 }}>
           <TableHead>
             <TableRow style={{ backgroundColor: '#7583d1' }}>
-              <TableCell style={{ color: '#fff' }}>resource</TableCell>
+              <TableCell style={{ color: '#fff' }}>resourceType</TableCell>
+              <TableCell style={{ color: '#fff' }}>resourceName</TableCell>
               <TableCell style={{ color: '#fff' }}>permissions</TableCell>
-              <TableCell style={{ color: '#fff' }}>isDeny</TableCell>
               <TableCell style={{ color: '#fff' }}>actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {accessList.map(item => (
               <TableRow key={item.id}>
-                <TableCell>{item.resource}</TableCell>
+                <TableCell>{item.resource === 'Cluster' ? 'Cluster' : 'VC'}</TableCell>
+                <TableCell>{item.resource === 'Cluster' ? '-' : item.resource.split(':')[1]}</TableCell>
                 <TableCell>{PermMap[item.permissions]} </TableCell>
-                <TableCell>{item.isDeny} </TableCell>
                 <TableCell>
                   <Button color="primary" onClick={() => this.updateAccess(item)}>Modify</Button>
                   <Button color="primary" onClick={() => this.delete(item)}>Delete</Button>

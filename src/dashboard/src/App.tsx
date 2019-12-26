@@ -100,7 +100,7 @@ const Layout: React.FC<RouteComponentProps> = ({ location, history }) => {
                 <>
                   <Route path="/vc" component={Vc} />
                   <Route exact path="/user" component={User} />
-                  <Route path="/user/:clusterId/:identityName" component={Access} />
+                  <Route path="/user/access/:identityName" component={Access} />
                 </>
               }
               <Redirect to="/" />
