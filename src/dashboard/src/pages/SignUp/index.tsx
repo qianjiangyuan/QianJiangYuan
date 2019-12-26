@@ -155,7 +155,7 @@ const SignUp: React.FC<RouteComponentProps> = ({ history }) => {
                     className={styles.submit}
                     onClick={onButtonClick}
                   >
-                    {signUp ? <CircularProgress size={24} /> : 'Sign up for Qjianjingyaun'}
+                    {signUp ? <CircularProgress size={24} /> : 'Sign up for QianJiangYuan'}
                   </Button>
                 </form>
               </Grid>
@@ -164,7 +164,7 @@ const SignUp: React.FC<RouteComponentProps> = ({ history }) => {
                 <Typography variant="body2">
                   {"Built with "}
                   <span role="img" aria-label="heart">❤️</span>
-                  {" by Qjianjingyaun"}
+                  {" by QianJiangYuan Team"}
                 </Typography>
               </Grid>
             </Grid>

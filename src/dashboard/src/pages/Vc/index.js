@@ -16,7 +16,7 @@ export default class Vc extends React.Component {
     this.state = {
       vcList: [],
       modifyFlag: false,
-      isEdit: 0,
+      isEdit: false,
       vcName: '',
       quota: '',
       metadata: '',
@@ -40,7 +40,7 @@ export default class Vc extends React.Component {
   addVc = () => {
     this.setState({
       modifyFlag: true,
-      isEdit: 0,
+      isEdit: false,
       vcName: '',
       quota: '',
       metadata: '',
@@ -50,7 +50,7 @@ export default class Vc extends React.Component {
   updateVc = (item) => {
     this.setState({
       modifyFlag: true,
-      isEdit: 1,
+      isEdit: true,
       vcName: item.vcName,
       quota: item.quota,
       metadata: item.metadata,

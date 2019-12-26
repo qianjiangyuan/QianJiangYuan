@@ -19,7 +19,7 @@ export default class Access extends React.Component {
       vcList: [],
       accessList: [],
       modifyFlag: false,
-      isEdit: 0,
+      isEdit: false,
       resourceType: null,
       resourceName: null,
       permissions: null,
@@ -51,7 +51,7 @@ export default class Access extends React.Component {
   addAccess = () => {
     this.setState({
       modifyFlag: true,
-      isEdit: 0,
+      isEdit: false,
       resourceType: 1,
       resourceName: '',
       permissions: 1,
@@ -72,7 +72,7 @@ export default class Access extends React.Component {
       resourceType,
       resourceName,
       permissions: item.permissions,
-      isEdit: 1,
+      isEdit: true,
     })
   }
 
