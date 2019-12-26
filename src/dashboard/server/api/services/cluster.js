@@ -419,9 +419,9 @@ class Cluster extends Service {
     return data
   }
 
-  async GetACL (params) {
-    const { userName } = params
-    const response = await this.fetch(`/GetACL?userName=${userName}`)
+  async GetACL () {
+    const { user } = this.context.state
+    const response = await this.fetch(`/GetACL?userName=${user.userName}`)
     this.context.assert(response.ok, 502)
     const data = await response.json()
     return data

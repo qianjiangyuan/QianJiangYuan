@@ -1,5 +1,7 @@
 import React from "react"
 import {
+  Container,
+  Dialog, DialogActions, DialogContent, DialogTitle,
   Table,
   TableHead,
   TableRow, TableCell, TableBody, Button, TextField, Grid,
@@ -36,9 +38,8 @@ export default class Vc extends React.Component {
 
   //新增VC
   addVc = () => {
-    const { modifyFlag } = this.state;
     this.setState({
-      modifyFlag: !modifyFlag,
+      modifyFlag: true,
       isEdit: 0,
       vcName: '',
       quota: '',
@@ -47,13 +48,18 @@ export default class Vc extends React.Component {
   }
 
   updateVc = (item) => {
-    const { modifyFlag } = this.state;
     this.setState({
-      modifyFlag: !modifyFlag,
+      modifyFlag: true,
       isEdit: 1,
       vcName: item.vcName,
       quota: item.quota,
       metadata: item.metadata,
+    })
+  }
+
+  cancel = () => {
+    this.setState({
+      modifyFlag: false,
     })
   }
 
@@ -76,6 +82,7 @@ export default class Vc extends React.Component {
     axios.get(url)
       .then((res) => {
         alert(`${isEdit ? '修改' : '新增'}成功`)
+        this.setState({ modifyFlag: false })
       }, (e) => {
         console.log(e);
         alert(`${isEdit ? '修改' : '新增'}失败`)
@@ -134,17 +141,16 @@ export default class Vc extends React.Component {
   render() {
     const { vcList, modifyFlag, isEdit, vcName, quota, metadata } = this.state;
     return (
-      <div>
+      <Container maxWidth='xl'>
         <div>
-          <Button variant="outlined" size="medium" color="primary" onClick={this.addVc}>{modifyFlag && !isEdit ? '收起新增' : '新增VC'}</Button>
+          <Button variant="outlined" size="medium" color="primary" onClick={this.addVc}>新增VC</Button>
         </div>
-        <Table style={{ width: '70%', float: 'left', marginTop: 20 }}>
+        <Table style={{ marginTop: 20 }}>
           <TableHead>
             <TableRow style={{ backgroundColor: '#7583d1' }}>
               <TableCell style={{ color: '#fff' }}>vcName</TableCell>
               <TableCell style={{ color: '#fff' }}>quota</TableCell>
               <TableCell style={{ color: '#fff' }}>metadata</TableCell>
-              <TableCell style={{ color: '#fff' }}>admin</TableCell>
               <TableCell style={{ color: '#fff' }}>actions</TableCell>
             </TableRow>
           </TableHead>
@@ -154,58 +160,62 @@ export default class Vc extends React.Component {
                 <TableCell>{item.vcName} </TableCell>
                 <TableCell>{item.quota} </TableCell>
                 <TableCell>{item.metadata} </TableCell>
-                <TableCell>{item.admin ? '管理员' : '用户'} </TableCell>
-                <TableCell>
-                  <Button color="primary" onClick={() => this.updateVc(item)}>Modify</Button>
-                  <Button color="primary" onClick={() => this.delete(item)}>Delete</Button>
-                </TableCell>
+                {
+                  item.admin ?
+                    <TableCell>
+                      <Button color="primary" onClick={() => this.updateVc(item)}>Modify</Button>
+                      <Button color="primary" onClick={() => this.delete(item)}>Delete</Button>
+                    </TableCell>
+                    :
+                    <TableCell></TableCell>
+                }
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        {
-          modifyFlag ?
-            <div style={{ width: '25%', float: 'left', padding: 10, margin: 10, borderWidth: 2, borderColor: '#999', borderStyle: 'solid' }}>
-              <h2 id="simple-modal-title">{isEdit ? '编辑' : '新增'}</h2>
-              <form>
-                <Grid item xs={8}>
-                  <TextField
-                    required
-                    label="vcName"
-                    value={vcName}
-                    onChange={this.vcNameChange.bind(this)}
-                    margin="normal"
-                    fullWidth={true}
-                  />
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    required
-                    label="quota"
-                    value={quota}
-                    onChange={this.quotaChange.bind(this)}
-                    margin="normal"
-                    fullWidth={true}
-                  />
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    required
-                    label="metadata"
-                    value={metadata}
-                    onChange={this.metadataChange.bind(this)}
-                    margin="normal"
-                    fullWidth={true}
-                  />
-                </Grid>
-                <Grid item xs={8}>
-                  <Button variant="outlined" size="medium" color="primary" type="button" onClick={this.save}>Save</Button>
-                </Grid>
-              </form>
-            </div>
-            : null
-        }
-      </div>
+
+        <Dialog fullWidth open={modifyFlag} onClose={this.cancel} aria-labelledby="form-dialog-title">
+          <DialogTitle id="form-dialog-title">{isEdit ? '编辑' : '新增'}</DialogTitle>
+          <DialogContent>
+            <form>
+              <TextField
+                fullWidth
+                required
+                label="vcName"
+                value={vcName}
+                onChange={this.vcNameChange.bind(this)}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                required
+                label="quota"
+                multiline
+                value={quota}
+                onChange={this.quotaChange.bind(this)}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                required
+                label="metadata"
+                multiline
+                value={metadata}
+                onChange={this.metadataChange.bind(this)}
+                margin="normal"
+              />
+            </form>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.cancel} color="primary">
+              Cancel
+          </Button>
+            <Button onClick={this.save} color="primary">
+              Save
+          </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
     )
   }
 }

@@ -106,7 +106,7 @@ router.get('/:clusterId/listUser',
 router.get('/:clusterId/updateUserPerm/:isAdmin/:isAuthorized/:identityName',
   require('./controllers/cluster/user/updateUser'))
 
-router.get('/:clusterId/GetACL',
+router.get('/:clusterId/access/:identityName',
   require('./middlewares/user')(),
   require('./controllers/cluster/access/GetACL'))
 router.get('/:clusterId/updateAce',

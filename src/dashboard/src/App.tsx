@@ -51,7 +51,7 @@ const Loading = (
 
 const Contexts: React.FC<BootstrapProps> = ({ uid, openId, group, nickName, userName, password, isAdmin, isAuthorized, _token, children }) => (
   <BrowserRouter>
-    <UserProvider  uid={uid} openId={openId} group={group} nickName={nickName} userName={userName} password={password} isAdmin={isAdmin} isAuthorized={isAuthorized} token={_token} >
+    <UserProvider uid={uid} openId={openId} group={group} nickName={nickName} userName={userName} password={password} isAdmin={isAdmin} isAuthorized={isAuthorized} token={_token} >
       <TeamProvider>
         <ClustersProvider>
           <ThemeProvider theme={theme}>
@@ -64,15 +64,15 @@ const Contexts: React.FC<BootstrapProps> = ({ uid, openId, group, nickName, user
 );
 
 const Layout: React.FC<RouteComponentProps> = ({ location, history }) => {
-  const { openId, group, userName } = React.useContext(UserContext);
+  const { openId, group, userName, isAdmin } = React.useContext(UserContext);
   const { teams } = React.useContext(TeamsContext);
 
   React.useEffect(() => {
     if (openId === undefined || group === undefined) {
       history.replace('/sign-in');
-    } else if(userName === undefined){
+    } else if (userName === undefined) {
       history.replace('/sign-up');
-    } else if(teams !== undefined && teams.length === 0) {
+    } else if (teams !== undefined && teams.length === 0) {
       history.replace('/empty-team');
     }
   }, [openId, group, userName, teams, history]);
@@ -95,9 +95,14 @@ const Layout: React.FC<RouteComponentProps> = ({ location, history }) => {
               <Route path="/jobs" component={Jobs} />
               <Route path="/job/:team/:clusterId/:jobId" component={Job} />
               <Route path="/cluster-status" component={ClusterStatus} />
-              <Route path="/vc" component={Vc} />
-              <Route path="/user" component={User} />
-              <Route path="/access" component={Access} />
+              {
+                !!isAdmin &&
+                <>
+                  <Route path="/vc" component={Vc} />
+                  <Route exact path="/user" component={User} />
+                  <Route path="/user/:clusterId/:identityName" component={Access} />
+                </>
+              }
               <Redirect to="/" />
             </Switch>
           </React.Suspense>

@@ -572,10 +572,10 @@ class DataHandler(object):
             return False
 
     @record
-    def UpdateIdentityInfoPerm(self, identityName, isAdmin, isAuthorized):
+    def UpdateIdentityInfoPerm(self, userName, isAdmin, isAuthorized):
         try:
             cursor = self.conn.cursor()
-            sql = """update `%s` set isAdmin = '%s', isAuthorized = '%s' where `identityName` = '%s' """ % (self.accounttablename, isAdmin, isAuthorized, identityName)
+            sql = """update `%s` set isAdmin = '%s', isAuthorized = '%s' where `userName` = '%s' """ % (self.accounttablename, isAdmin, isAuthorized, userName)
             cursor.execute(sql)
             self.conn.commit()
             cursor.close()

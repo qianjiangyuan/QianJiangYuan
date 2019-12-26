@@ -70,19 +70,15 @@ const NavigationList: React.FC = () => {
         <ListItemText>Cluster Status</ListItemText>
       </LinkListItem>
       {
-        isAdmin ?
-          <div style={{ width: '100%' }}>
-            <LinkListItem to="/vc">
-              <ListItemText>Vc</ListItemText>
-            </LinkListItem>
-            <LinkListItem to="/user">
-              <ListItemText>User</ListItemText>
-            </LinkListItem>
-            <LinkListItem to="/access">
-              <ListItemText>Access</ListItemText>
-            </LinkListItem>
-          </div>
-          : null
+        !!isAdmin &&
+        <>
+          <LinkListItem to="/user">
+            <ListItemText>Manage Users</ListItemText>
+          </LinkListItem>
+          <LinkListItem to="/vc">
+            <ListItemText>Virtual Cluster</ListItemText>
+          </LinkListItem>
+        </>
       }
     </List>
   );

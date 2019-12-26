@@ -5,9 +5,7 @@
 
 /** @type {import('koa').Middleware<State>} */
 module.exports = async context => {
-  const { cluster, user } = context.state
-  const params = context.params
-  params.userName = user.userName
+  const { cluster } = context.state
   const ret = await cluster.listUser()
   context.body = ret
 }

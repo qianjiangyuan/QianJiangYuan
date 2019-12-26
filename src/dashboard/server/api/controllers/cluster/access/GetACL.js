@@ -5,8 +5,9 @@
 
 /** @type {import('koa').Middleware<State>} */
 module.exports = async context => {
-  const { cluster, user } = context.state
-  const params = { userName: user.userName }
-  const ret = await cluster.GetACL(params)
+  const { cluster } = context.state
+  const { identityName } = context.params
+  const data = await cluster.GetACL()
+  const ret = data.result.filter(ace => ace.identityName === identityName)
   context.body = ret
 }
