@@ -10,7 +10,7 @@ const Submit = withRouter(({ match }) => {
     <Switch>
       <Route exact path={`${match.path}/training`} component={Training}/>
       <Route exact path={`${match.path}/training-cluster`} component={Training}/>
-      <Route exact path={`${match.path}/data`} component={DataJob}/>
+      {/* <Route exact path={`${match.path}/data`} component={DataJob}/> */}
       <Redirect to="/"/>
     </Switch>
   );
