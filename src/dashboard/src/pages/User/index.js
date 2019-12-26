@@ -1,11 +1,9 @@
 import React from "react"
 import {
   Container,
-  Dialog, DialogActions, DialogContent, DialogTitle,
-  TextField,
   Table,
   TableHead,
-  TableRow, TableCell, TableBody, Button, FormControl, InputLabel, Select, MenuItem,
+  TableRow, TableCell, TableBody, Button, Switch
 } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import axios from 'axios';
@@ -16,11 +14,7 @@ export default class User extends React.Component {
   constructor() {
     super()
     this.state = {
-      userList: [],
-      modifyFlag: false,
-      userName: '',
-      isAdmin: null,
-      isAuthorized: null,
+      userList: []
     }
   }
 
@@ -37,44 +31,24 @@ export default class User extends React.Component {
       }, () => { })
   }
 
-  updateUser = (item) => {
-    this.setState({
-      modifyFlag: true,
-      userName: item.userName,
-      isAdmin: item.isAdmin,
-      isAuthorized: item.isAuthorized,
-    })
-  }
-
-  cancel = () => {
-    this.setState({
-      modifyFlag: false,
-    })
-  }
-
-  save = () => {
-    const { isAdmin, isAuthorized, userName } = this.state;
-    let url = `/api/${this.context.selectedCluster}/updateUserPerm/${isAdmin}/${isAuthorized}/${userName}`;
+  changeAdmin = (item) => {
+    let url = `/api/${this.context.selectedCluster}/updateUser/${item.userName}?isAdmin=${item.isAdmin ^ 1}`;
     axios.get(url).then(() => {
-      alert(`修改成功`)
-      this.setState({ modifyFlag: false })
       this.getUserList();
     }, (e) => {
       console.log(e);
-      alert(`修改失败`)
     })
   }
 
   //change
   isRoleChange(e) {
     this.setState({
-      isAdmin: e.target.value >> 1 & 1,
-      isAuthorized: e.target.value & 1
+      isAdmin: e.target.value & 1
     })
   }
 
   render() {
-    const { userList, modifyFlag, userName, isAdmin, isAuthorized } = this.state;
+    const { userList } = this.state;
     return (
       <Container maxWidth='xl'>
         <Table style={{ float: 'left' }}>
@@ -84,7 +58,7 @@ export default class User extends React.Component {
               <TableCell style={{ color: '#fff' }}>openId</TableCell>
               <TableCell style={{ color: '#fff' }}>nickName</TableCell>
               <TableCell style={{ color: '#fff' }}>userName</TableCell>
-              <TableCell style={{ color: '#fff' }}>userRole</TableCell>
+              <TableCell style={{ color: '#fff' }}>isAdmin</TableCell>
               <TableCell style={{ color: '#fff' }}>actions</TableCell>
             </TableRow>
           </TableHead>
@@ -95,49 +69,21 @@ export default class User extends React.Component {
                 <TableCell>{item.openId} </TableCell>
                 <TableCell>{item.nickName} </TableCell>
                 <TableCell>{item.userName}</TableCell>
-                <TableCell>{item.isAdmin ? '管理员' : (item.isAuthorized ? '用户' : '未认证')} </TableCell>
                 <TableCell>
-                  <Button color="primary" onClick={() => this.updateUser(item)}>Modify</Button>
+                  <Switch
+                    checked={item.isAdmin > 0}
+                    color="primary"
+                    inputProps={{ 'aria-label': 'primary checkbox' }}
+                    onChange={() => this.changeAdmin(item)}
+                  />
+                </TableCell>
+                <TableCell>
                   <Button color="primary" component={Link} to={`/user/access/${item.userName}`}>Access</Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-
-        <Dialog fullWidth open={modifyFlag} onClose={this.cancel} aria-labelledby="form-dialog-title">
-          <DialogTitle id="form-dialog-title">Modify userRole</DialogTitle>
-          <DialogContent>
-            <form>
-              <FormControl fullWidth>
-                <TextField
-                  disabled
-                  label="userName"
-                  defaultValue={userName}>
-                </TextField>
-              </FormControl>
-              <FormControl fullWidth style={{ marginTop: 20 }}>
-                <InputLabel>userRole</InputLabel>
-                <Select
-                  value={isAdmin * 2 + isAuthorized}
-                  onChange={this.isRoleChange.bind(this)}
-                >
-                  <MenuItem value={3}>管理员</MenuItem>
-                  <MenuItem value={1}>用户</MenuItem>
-                  <MenuItem value={0}>未认证</MenuItem>
-                </Select>
-              </FormControl>
-            </form>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.cancel} color="primary">
-              Cancel
-          </Button>
-            <Button onClick={this.save} color="primary">
-              Save
-          </Button>
-          </DialogActions>
-        </Dialog>
       </Container>
     )
   }

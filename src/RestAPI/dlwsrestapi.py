@@ -685,24 +685,22 @@ class ListUser(Resource):
         return resp
 api.add_resource(ListUser, '/ListUser')
 
-class UpdateUserPerm(Resource):
+class UpdateUser(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('isAdmin')
-        parser.add_argument('isAuthorized')
         parser.add_argument('identityName')
         args = parser.parse_args()
         identityName = args["identityName"]
         isAdmin = args["isAdmin"]
-        isAuthorized = args["isAuthorized"]
         ret = {}
-        ret["result"] = JobRestAPIUtils.updateUserPerm(identityName,isAdmin,isAuthorized)
+        ret["result"] = JobRestAPIUtils.UpdateUser(identityName,isAdmin)
         resp = jsonify(ret)
         resp.headers["Access-Control-Allow-Origin"] = "*"
         resp.headers["dataType"] = "json"
 
         return resp
-api.add_resource(UpdateUserPerm, '/UpdateUserPerm')
+api.add_resource(UpdateUser, '/UpdateUser')
 
 class SignUp(Resource):
     def get(self):
@@ -713,7 +711,6 @@ class SignUp(Resource):
         parser.add_argument('userName')
         parser.add_argument('password')
         parser.add_argument('isAdmin')
-        parser.add_argument('isAuthorized')
         
         args = parser.parse_args()
         openId = args["openId"]
@@ -729,12 +726,7 @@ class SignUp(Resource):
         else:
             isAdmin = True
 
-        if args["isAuthorized"] is None or args["isAuthorized"].strip() != 'true':
-            isAuthorized = False
-        else:
-            isAuthorized = True
-
-        output = JobRestAPIUtils.SignUp(openId, group, nickName, userName, password, isAdmin, isAuthorized)
+        output = JobRestAPIUtils.SignUp(openId, group, nickName, userName, password, isAdmin)
         if "error" in output:
             ret["result"] = False
             ret["error"] = output["error"]

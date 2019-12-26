@@ -8,7 +8,6 @@ interface Context {
   nickName?: string;
   password?: string;
   isAdmin?: boolean;
-  isAuthorized?: boolean;
   token?: any;
 }
 
@@ -24,17 +23,16 @@ interface ProviderProps {
   userName?: string;
   password?: string;
   isAdmin?: boolean;
-  isAuthorized?: boolean;
   token?: any;
 }
 
-export const Provider: React.FC<ProviderProps> = ({ uid, openId, group, nickName, userName, password, isAdmin, isAuthorized, children, token }) => {
+export const Provider: React.FC<ProviderProps> = ({ uid, openId, group, nickName, userName, password, isAdmin, children, token }) => {
   if (token) {
     token = new Buffer(token.data).toString('hex');
   }
   return (
     <Context.Provider
-      value={{ uid, openId, group, nickName, userName, password, isAdmin, isAuthorized, token }}
+      value={{ uid, openId, group, nickName, userName, password, isAdmin, token }}
       children={children}
     />
   );

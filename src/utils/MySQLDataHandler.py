@@ -103,7 +103,6 @@ class DataHandler(object):
                     `userName` varchar(64) NOT NULL,
                     `password` varchar(64) NOT NULL,
                     `isAdmin` int(11) NOT NULL,
-                    `isAuthorized` int(11) NOT NULL,
                     `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (`uid`) USING BTREE,
                     UNIQUE KEY `userName` (`userName`) USING BTREE,
@@ -440,11 +439,11 @@ class DataHandler(object):
     @record
     def ListUser(self):
         cursor = self.conn.cursor()
-        query = "SELECT `uid`,`openId`,`group`,`nickName`,`userName`,`password`,`isAdmin`,`isAuthorized` FROM `%s`" % (self.accounttablename)
+        query = "SELECT `uid`,`openId`,`group`,`nickName`,`userName`,`password`,`isAdmin` FROM `%s`" % (self.accounttablename)
         ret = []
         try:
             cursor.execute(query)
-            for (uid, openId, group, nickName, userName, password, isAdmin, isAuthorized) in cursor:
+            for (uid, openId, group, nickName, userName, password, isAdmin) in cursor:
                 record = {}
                 record["uid"] = uid
                 record["openId"] = openId
@@ -453,7 +452,6 @@ class DataHandler(object):
                 record["userName"] = userName
                 record["password"] = password
                 record["isAdmin"] = isAdmin
-                record["isAuthorized"] = isAuthorized
                 ret.append(record)
         except Exception as e:
             logger.error('ListUser Exception: %s', str(e))
@@ -464,11 +462,11 @@ class DataHandler(object):
     @record
     def GetAccountByOpenId(self, openId, group):
         cursor = self.conn.cursor()
-        query = "SELECT `uid`,`openId`,`group`,`nickName`,`userName`,`password`,`isAdmin`,`isAuthorized` FROM `%s` where `openId` = '%s' and `group` = '%s'" % (self.accounttablename, openId, group)
+        query = "SELECT `uid`,`openId`,`group`,`nickName`,`userName`,`password`,`isAdmin` FROM `%s` where `openId` = '%s' and `group` = '%s'" % (self.accounttablename, openId, group)
         ret = []
         try:
             cursor.execute(query)
-            for (uid, openId, group, nickName, userName, password, isAdmin, isAuthorized) in cursor:
+            for (uid, openId, group, nickName, userName, password, isAdmin) in cursor:
                 record = {}
                 record["uid"] = uid
                 record["openId"] = openId
@@ -477,7 +475,6 @@ class DataHandler(object):
                 record["userName"] = userName
                 record["password"] = password
                 record["isAdmin"] = isAdmin
-                record["isAuthorized"] = isAuthorized
                 ret.append(record)
         except Exception as e:
             logger.error('GetAccountByOpenId Exception: %s', str(e))
@@ -488,11 +485,11 @@ class DataHandler(object):
     @record
     def GetAccountByUserName(self, userName):
         cursor = self.conn.cursor()
-        query = "SELECT `uid`,`openId`,`group`,`nickName`,`userName`,`password`,`isAdmin`,`isAuthorized` FROM `%s` where `userName` = '%s'" % (self.accounttablename, userName)
+        query = "SELECT `uid`,`openId`,`group`,`nickName`,`userName`,`password`,`isAdmin` FROM `%s` where `userName` = '%s'" % (self.accounttablename, userName)
         ret = []
         try:
             cursor.execute(query)
-            for (uid, openId, group, nickName, userName,  password, isAdmin, isAuthorized) in cursor:
+            for (uid, openId, group, nickName, userName,  password, isAdmin) in cursor:
                 record = {}
                 record["uid"] = uid
                 record["openId"] = openId
@@ -501,7 +498,6 @@ class DataHandler(object):
                 record["userName"] = userName
                 record["password"] = password
                 record["isAdmin"] = isAdmin
-                record["isAuthorized"] = isAuthorized
                 ret.append(record)
         except Exception as e:
             logger.error('GetAccountByUserName Exception: %s', str(e))
@@ -510,16 +506,16 @@ class DataHandler(object):
         return ret
 
     @record
-    def UpdateAccountInfo(self, openId, group, nickName, userName, password, isAdmin, isAuthorized):
+    def UpdateAccountInfo(self, openId, group, nickName, userName, password, isAdmin):
         try:
             cursor = self.conn.cursor()
 
             if len(self.GetAccountByOpenId(openId, group)) == 0:
-                sql = "INSERT INTO `"+self.accounttablename+"` (`openId`, `group`, `nickName`, `userName`, `password`, `isAdmin`, `isAuthorized`) VALUES (%s,%s,%s,%s,%s,%s,%s)"
-                cursor.execute(sql, (openId, group, nickName, userName, password, isAdmin, isAuthorized))
+                sql = "INSERT INTO `"+self.accounttablename+"` (`openId`, `group`, `nickName`, `userName`, `password`, `isAdmin`) VALUES (%s,%s,%s,%s,%s,%s)"
+                cursor.execute(sql, (openId, group, nickName, userName, password, isAdmin))
             else:
-                sql = "update `%s` set `nickName` = '%s', `userName` = '%s', `password` = '%s', `isAdmin` = '%s', isAuthorized = '%s' where `openId` = '%s' and `group` = '%s'"
-                cursor.execute(sql, (self.accounttablename, nickName, userName, password, isAdmin, isAuthorized, openId, group))
+                sql = "update `%s` set `nickName` = '%s', `userName` = '%s', `password` = '%s', `isAdmin` = '%s' where `openId` = '%s' and `group` = '%s'"
+                cursor.execute(sql, (self.accounttablename, nickName, userName, password, isAdmin, openId, group))
 
             self.conn.commit()
             cursor.close()
@@ -572,10 +568,10 @@ class DataHandler(object):
             return False
 
     @record
-    def UpdateIdentityInfoPerm(self, userName, isAdmin, isAuthorized):
+    def UpdateIdentityInfoPerm(self, userName, isAdmin):
         try:
             cursor = self.conn.cursor()
-            sql = """update `%s` set isAdmin = '%s', isAuthorized = '%s' where `userName` = '%s' """ % (self.accounttablename, isAdmin, isAuthorized, userName)
+            sql = """update `%s` set isAdmin = '%s' where `userName` = '%s' """ % (self.accounttablename, isAdmin, userName)
             cursor.execute(sql)
             self.conn.commit()
             cursor.close()

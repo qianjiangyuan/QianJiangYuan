@@ -39,7 +39,6 @@ interface BootstrapProps {
   userName?: string;
   password?: string;
   isAdmin?: boolean;
-  isAuthorized?: boolean;
   _token?: any;
 }
 
@@ -49,9 +48,9 @@ const Loading = (
   </Box>
 );
 
-const Contexts: React.FC<BootstrapProps> = ({ uid, openId, group, nickName, userName, password, isAdmin, isAuthorized, _token, children }) => (
+const Contexts: React.FC<BootstrapProps> = ({ uid, openId, group, nickName, userName, password, isAdmin, _token, children }) => (
   <BrowserRouter>
-    <UserProvider uid={uid} openId={openId} group={group} nickName={nickName} userName={userName} password={password} isAdmin={isAdmin} isAuthorized={isAuthorized} token={_token} >
+    <UserProvider uid={uid} openId={openId} group={group} nickName={nickName} userName={userName} password={password} isAdmin={isAdmin} token={_token} >
       <TeamProvider>
         <ClustersProvider>
           <ThemeProvider theme={theme}>

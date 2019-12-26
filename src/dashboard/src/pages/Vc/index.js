@@ -4,7 +4,7 @@ import {
   Dialog, DialogActions, DialogContent, DialogTitle,
   Table,
   TableHead,
-  TableRow, TableCell, TableBody, Button, TextField, Grid,
+  TableRow, TableCell, TableBody, Button, TextField
 } from "@material-ui/core";
 import axios from 'axios';
 import ClustersContext from "../../contexts/Clusters";

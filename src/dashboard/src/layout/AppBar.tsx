@@ -136,10 +136,10 @@ TeamMenu = () => {
 const UserButton: React.FC = () => {
   const [openUserProfile, setOpenUserProfile] = React.useState(false);
   const [openCopyWarn, setOpenCopyWarn] = React.useState(false);
-  const { nickName, userName,  password, isAdmin, isAuthorized, token } = React.useContext(UserContext);
+  const { nickName, userName,  password, isAdmin, token } = React.useContext(UserContext);
   const styles = useStyles();
   // const Username = typeof openId === 'string' ?  openId.split('@', 1)[0] : openId;
-  const accountType = isAdmin ? 'Admin' : (isAuthorized ? 'User' : 'Unauthorized')
+  const accountType = isAdmin ? 'Admin' : 'User'
   const handleClose = () => {
     setOpenUserProfile(false);
   }

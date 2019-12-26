@@ -85,7 +85,6 @@ class User extends Service {
     user.userName = payload['userName']
     user.password = payload['password']
     user.isAdmin = payload['isAdmin']
-    user.isAuthorized = payload['isAuthorized']
     return user
   }
 
@@ -139,7 +138,6 @@ class User extends Service {
       this.userName = data['userName']
       this.password = data['password']
       this.isAdmin = data['isAdmin']
-      this.isAuthorized = data['isAuthorized']
     }
     return data
   }
@@ -153,8 +151,7 @@ class User extends Service {
       nickName: nickName,
       userName: userName,
       password: password,
-      isAdmin: isAdmin,
-      isAuthorized: isAdmin
+      isAdmin: isAdmin
     }))
     const clusterId = clusterIds[0]
     const response = await new Cluster(this.context, clusterId).fetch('/SignUp?' + params)
@@ -173,8 +170,7 @@ class User extends Service {
       nickName: this.nickName,
       userName: this.userName,
       password: this.password,
-      isAdmin: this.isAdmin,
-      isAuthorized: this.isAuthorized
+      isAdmin: this.isAdmin
     }, sign)
   }
 

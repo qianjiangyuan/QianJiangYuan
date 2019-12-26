@@ -103,7 +103,7 @@ router.get('/:clusterId/updateVc/:vcName/:quota/:metadata',
 router.get('/:clusterId/listUser',
   require('./middlewares/user')(),
   require('./controllers/cluster/user/listUser'))
-router.get('/:clusterId/updateUserPerm/:isAdmin/:isAuthorized/:identityName',
+router.get('/:clusterId/updateUser/:identityName',
   require('./controllers/cluster/user/updateUser'))
 
 router.get('/:clusterId/access/:identityName',

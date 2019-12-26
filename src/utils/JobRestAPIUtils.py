@@ -402,9 +402,9 @@ def ListUser():
     dataHandler.Close()
     return ret
 
-def updateUserPerm(identityName,isAdmin,isAuthorized):
+def UpdateUser(identityName,isAdmin):
     dataHandler = DataHandler()
-    ret = dataHandler.UpdateIdentityInfoPerm(identityName,isAdmin,isAuthorized)
+    ret = dataHandler.UpdateIdentityInfoPerm(identityName,isAdmin)
     dataHandler.Close()
     return ret
 
@@ -430,7 +430,7 @@ def AddUser(username,uid,gid,groups):
         dataHandler.Close()
     return ret
 
-def SignUp(openId, group, nickName, userName, password, isAdmin = False, isAuthorized = False):
+def SignUp(openId, group, nickName, userName, password, isAdmin = False):
     ret = {}
     try:
         dataHandler = DataHandler()
@@ -453,7 +453,7 @@ def SignUp(openId, group, nickName, userName, password, isAdmin = False, isAutho
                 return  ret
             if password is None or len(password) < 6:
                 password = ''.join(random.sample(string.ascii_letters + string.digits, 8))
-            dataHandler.UpdateAccountInfo(openId, group, nickName, userName, password, isAdmin, isAuthorized)
+            dataHandler.UpdateAccountInfo(openId, group, nickName, userName, password, isAdmin)
             lst = dataHandler.GetAccountByOpenId(openId, group)
 
         if len(lst) > 0:

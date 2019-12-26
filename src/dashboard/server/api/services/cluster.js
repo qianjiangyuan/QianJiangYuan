@@ -410,12 +410,12 @@ class Cluster extends Service {
     return data
   }
 
-  async updateUserPerm (params) {
-    const { identityName, isAdmin, isAuthorized } = params
-    const response = await this.fetch(`/UpdateUserPerm?isAdmin=${isAdmin}&isAuthorized=${isAuthorized}&identityName=${identityName}`)
+  async updateUser () {
+    const { identityName } = this.context.params
+    const { isAdmin } = this.context.query
+    const response = await this.fetch(`/UpdateUser?identityName=${identityName}&isAdmin=${isAdmin}`)
     this.context.assert(response.ok, 502)
     const data = await response.json()
-    console.log(data)
     return data
   }
 
@@ -432,7 +432,6 @@ class Cluster extends Service {
     const response = await this.fetch(`/UpdateAce?resourceType=${resourceType}&resourceName=${resourceName}&permissions=${permissions}&identityName=${identityName}&userName=${userName}`)
     this.context.assert(response.ok, 502)
     const data = await response.json()
-    console.log(data)
     return data
   }
   
@@ -441,7 +440,6 @@ class Cluster extends Service {
     const response = await this.fetch(`/DeleteAce?resourceType=${resourceType}&resourceName=${resourceName}&identityName=${identityName}&userName=${userName}`)
     this.context.assert(response.ok, 502)
     const data = await response.json()
-    console.log(data)
     return data
   }
 }
