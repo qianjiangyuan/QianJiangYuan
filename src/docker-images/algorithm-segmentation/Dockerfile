@@ -28,16 +28,16 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
         zip \
         libcurl3-dev \
         libfreetype6-dev \
-        libpng12-dev \
+        libpng-dev \
         libzmq3-dev \
         pkg-config \
-        python3.5-dev \
+        python3.6-dev \
         zlib1g-dev \
         libopencv-dev \
         # python3-opencv \
 		python3-tk \
         build-essential autoconf libtool libcunit1-dev \
-        libproj-dev libgdal-dev libgeos-dev libjson0-dev vim python3-gdal \
+        libproj-dev libgdal-dev libgeos-dev libjson-c-dev vim python3-gdal \
     	# requirements for keras
     	python3-h5py \
     	python3-yaml \
@@ -63,7 +63,8 @@ RUN pip3 --no-cache-dir install \
 		pandas \
 		h5py \
 		shapely \
-        opencv-python \
+        opencv-contrib-python \
+        imagehash \
     	&& \
     python3 -m ipykernel.kernelspec
 
@@ -111,7 +112,42 @@ RUN pip3 install jupyterlab
 RUN python3 -m pip install ipykernel
 RUN python3 -m ipykernel install --user
 
-RUN rm /usr/bin/python && ln -s /usr/bin/python3.5 /usr/bin/python
+RUN rm /usr/bin/python && ln -s /usr/bin/python3.6 /usr/bin/python
+
+RUN apt-get update -y && apt-get install -y gdal-bin xauth xfonts-base
+
+RUN mkdir /src
+WORKDIR /src
+RUN git clone https://github.com/opencv/opencv_contrib
+RUN git clone https://github.com/opencv/opencv
+RUN mkdir /src/opencv/build
+RUN cd /src/opencv/build && cmake -DOPENCV_EXTRA_MODULES_PATH=/src/opencv_contrib/modules /src/opencv \
+    -DOPENCV_ENABLE_NONFREE=ON \
+    -DBUILD_TIFF=ON \
+	-DBUILD_opencv_java=OFF \
+    -DWITH_CUDA=OFF \
+    -DENABLE_AVX=ON \
+    -DWITH_OPENGL=ON \
+    -DWITH_OPENCL=ON \
+    -DWITH_IPP=ON \
+    -DWITH_TBB=ON \
+    -DWITH_EIGEN=ON \
+    -DWITH_V4L=ON \
+    -DBUILD_TESTS=OFF \
+    -DBUILD_PERF_TESTS=OFF \
+    -DCMAKE_BUILD_TYPE=RELEASE \
+    -DBUILD_opencv_python3=ON \
+    -DCMAKE_INSTALL_PREFIX=$(python3 -c "import sys; print(sys.prefix)") \
+    -DPYTHON_EXECUTABLE=$(which python3) \
+    -DPYTHON_INCLUDE_DIR=$(python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
+    -DPYTHON_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
+    -DOPENCV_PYTHON3_INSTALL_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") \
+    && make -j5 \
+    && make install \
+    && ldconfig 
+RUN rm -rf /usr/local/lib/python3.5/dist-packages/cv2 \
+    && rm -rf /src/opencv \
+    && rm -rf /src/opencv_contrib
 
 ###################
 # TensorBoard

@@ -219,6 +219,7 @@ def config_dockers(rootdir, dockerprefix, dockertag, verbose, config):
         system_docker_dic = config["dockers"]["system"]
         customize_docker_dic = config["dockers"]["customize"]
         docker_list = get_docker_list(rootdir, dockerprefix, dockertag, None, verbose )
+        # print("Customized_dic: %s" % customize_docker_dic)
         # Populate system dockers 
         for assemblename, tuple in docker_list.iteritems():
             # print assemblename

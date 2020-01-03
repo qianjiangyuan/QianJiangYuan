@@ -64,7 +64,7 @@ if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
         sudo service network-manager restart
 fi
 
-sudo service apache2 stop
+# sudo service apache2 stop
 
 if  lspci | grep -qE "[0-9a-fA-F][0-9a-fA-F]:[0-9a-fA-F][0-9a-fA-F].[0-9] (3D|VGA compatible) controller: NVIDIA Corporation.*" ; then
 
@@ -116,7 +116,7 @@ if  lspci | grep -qE "[0-9a-fA-F][0-9a-fA-F]:[0-9a-fA-F][0-9a-fA-F].[0-9] (3D|VG
 
     sudo apt-get purge -y nvidia*
     sudo apt-get update
-    yes | sudo apt-get install -y nvidia-driver-430
+    yes | sudo apt-get install -y nvidia-driver-440
 
         yes | sudo apt install -y nvidia-modprobe
 

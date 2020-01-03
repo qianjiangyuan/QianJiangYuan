@@ -43,16 +43,11 @@ docker --version
 ## docker already installed
 else
 sudo apt-get remove docker docker-engine docker.io
-# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-# sudo add-apt-repository \
-#    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-#    $(lsb_release -cs) \
-#    stable"
-   
-# use aliyun as repository
-curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
-
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
 sudo apt-get update
 yes | sudo apt-get install -y docker-ce
 fi
@@ -121,7 +116,7 @@ if  lspci | grep -qE "[0-9a-fA-F][0-9a-fA-F]:[0-9a-fA-F][0-9a-fA-F].[0-9] (3D|VG
 
     sudo apt-get purge -y nvidia*
     sudo apt-get update
-    yes | sudo apt-get install -y nvidia-440
+    yes | sudo apt-get install -y nvidia-driver-440
 
         yes | sudo apt install -y nvidia-modprobe
 
@@ -137,11 +132,11 @@ if  lspci | grep -qE "[0-9a-fA-F][0-9a-fA-F]:[0-9a-fA-F][0-9a-fA-F].[0-9] (3D|VG
         curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
         sudo apt-get update
 
-        yes | sudo apt-get install -y nvidia-docker2
+        yes | sudo apt-get install -y nvidia-container-toolkit
         sudo pkill -SIGHUP dockerd
 
         # Test nvidia-smi
-        sudo nvidia-docker run --rm dlws/cuda nvidia-smi
+        sudo docker run --gpus all --rm dlws/cuda nvidia-smi
 
 
         sudo mkdir -p /opt/nvidia-driver/

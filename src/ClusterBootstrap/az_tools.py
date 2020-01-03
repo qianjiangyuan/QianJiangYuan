@@ -32,13 +32,15 @@ import socket
 import utils
 from az_params import *
 from params import *
+sys.path.append("../utils")
+from ConfigUtils import *
 
 verbose = False
 no_execution = False
 
 # These are the default configuration parameter
 
-
+""" 
 def init_config():
     config = {}
     for k, v in default_config_parameters.iteritems():
@@ -65,9 +67,13 @@ def merge_config(config1, config2, verbose):
             if verbose:
                 print("Entry %s == %s " % (entry, config2[entry]))
             config1[entry] = config2[entry]
-
+ """
 
 def update_config(config, genSSH=True):
+    # Generate random mysql_password if necessary
+    if "mysql_password" not in config:
+        config["mysql_password"] = uuid.uuid4().hex[:16]
+
     if "resource_group_name" not in config["azure_cluster"]:
         config["azure_cluster"]["resource_group_name"] = config[
             "azure_cluster"]["cluster_name"] + "ResGrp"
@@ -279,8 +285,7 @@ def create_vnet():
         output = utils.exec_cmd_local(cmd)
         print(output)
 
-
-def create_nsg():
+def get_dev_network_source_addresses_prefixes():
     if "source_addresses_prefixes" in config["cloud_config"]["dev_network"]:
         source_addresses_prefixes = config["cloud_config"][
             "dev_network"]["source_addresses_prefixes"]
@@ -289,6 +294,11 @@ def create_nsg():
     else:
         print "Please setup source_addresses_prefixes in config.yaml, otherwise, your cluster cannot be accessed"
         exit()
+    return source_addresses_prefixes
+
+
+def create_nsg():
+    source_addresses_prefixes = get_dev_network_source_addresses_prefixes()
     cmd = """
         az network nsg create \
             --resource-group %s \
@@ -356,13 +366,15 @@ def create_nsg():
         output = utils.exec_cmd_local(cmd)
         print(output)
 
-def create_nfs_nsg():
-    if "source_addresses_prefixes" in config["cloud_config"]["dev_network"]:
-        source_addresses_prefixes = config["cloud_config"][
-            "dev_network"]["source_addresses_prefixes"]
+def get_nfs_network_source_addresses_prefixes():
+    source_addresses_prefixes = get_dev_network_source_addresses_prefixes()
+    if "source_ips" in config["cloud_config"]["nfs_ssh"]:
+        return " ".join(list(set(config["cloud_config"]["nfs_ssh"]["source_ips"])) + source_addresses_prefixes)
     else:
-        print "Please setup source_addresses_prefixes in config.yaml, otherwise, your cluster cannot be accessed"
-        exit()
+        return source_addresses_prefixes
+
+def create_nfs_nsg():
+    source_addresses_prefixes = get_nfs_network_source_addresses_prefixes()
     if int(config["azure_cluster"]["nfs_node_num"]) > 0:
         cmd = """
             az network nsg create \
@@ -375,8 +387,9 @@ def create_nfs_nsg():
         if not no_execution:
             output = utils.exec_cmd_local(cmd)
             print(output)
+    else:
+        return
 
-    print type(config["cloud_config"]["nfs_ssh"]["source_ips"]), config["cloud_config"]["nfs_ssh"]["source_ips"],type(source_addresses_prefixes), source_addresses_prefixes
     cmd = """
         az network nsg rule create \
             --resource-group %s \
@@ -389,7 +402,7 @@ def create_nfs_nsg():
         """ % ( config["azure_cluster"]["resource_group_name"],
                 config["azure_cluster"]["nfs_nsg_name"],
                 config["cloud_config"]["nfs_ssh"]["port"],
-                " ".join(list(set(config["cloud_config"]["nfs_ssh"]["source_ips"] + source_addresses_prefixes))),
+                source_addresses_prefixes,
                 )
     if not no_execution:
         output = utils.exec_cmd_local(cmd)
@@ -440,7 +453,7 @@ def get_vm_ip(i, role):
 def create_cluster(arm_vm_password=None, parallelism=1):
     bSQLOnly = (config["azure_cluster"]["infra_node_num"] <= 0)
     assert int(config["azure_cluster"]["nfs_node_num"]) >= len(config["azure_cluster"]["nfs_vm"])
-    assert "mysql_password" in config
+    # assert "mysql_password" in config
     print "creating resource group..."
     create_group()
     if not bSQLOnly:
@@ -453,6 +466,7 @@ def create_cluster(arm_vm_password=None, parallelism=1):
         create_vnet()
         print "creating network security group..."
         create_nsg()
+        print "creating network security group for nfs ..."
         create_nfs_nsg()
     if useSqlAzure():
         print "creating sql server and database..."
@@ -793,7 +807,9 @@ def gen_cluster_config(output_file_name, output_file=True, no_az=False):
             cc["mountpoints"]["rootshare"]["mountpoints"] = ""
             if file_share_key is not None:
                 cc["mountpoints"]["rootshare"]["accesskey"] = file_share_key
+        # elif len(config["azure_cluster"]["nfs_vm"])>0:
         else:
+            # Use NFS
             nfs_vm_suffixes2dpath = {vm["suffix"]:vm["data_disk_mnt_path"] for vm in config["azure_cluster"]["nfs_vm"] if "suffix" in vm}
             used_nfs_suffix = set([nfs_cnf["server_suffix"] for nfs_cnf in config["nfs_mnt_setup"] if "server_suffix" in nfs_cnf])
             assert (used_nfs_suffix - set(nfs_vm_suffixes2dpath.keys())) == set() and "suffix not in nfs_suffixes list!"
@@ -802,6 +818,7 @@ def gen_cluster_config(output_file_name, output_file=True, no_az=False):
             # unused, either node without name suffix or those with suffix but not specified in any nfs_svr_setup item
             unused_nfs = sorted([s for s in nfs_names2ip.keys() if s not in suffix2used_nfs.values()])
             unused_ID_cnt = 0
+            print("nfs_mnt_setup: %s" % (config["nfs_mnt_setup"]))
             for nfs_cnf in config["nfs_mnt_setup"]:
                 if "server_suffix" in nfs_cnf:
                     server_name = suffix2used_nfs[nfs_cnf["server_suffix"]]
@@ -811,6 +828,7 @@ def gen_cluster_config(output_file_name, output_file=True, no_az=False):
                     unused_ID_cnt += 1
                     mnt_parent_path = config["azure_cluster"]["nfs_data_disk_path"]
                 server_ip = nfs_names2ip[server_name]
+                
                 for mntname, mntcnf in nfs_cnf["mnt_point"].items():
                     if not mntcnf["filesharename"].startswith(mnt_parent_path):
                         print "Error: Wrong filesharename {}! Mount path is {} !".format(mntcnf["filesharename"], mnt_parent_path)
@@ -949,7 +967,9 @@ if __name__ == '__main__':
     dirpath = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
     # print "Directory: " + dirpath
     os.chdir(dirpath)
-    config = init_config()
+    global config
+    config = init_config(default_config_parameters)
+    merge_config( config, default_az_parameters )
     parser = argparse.ArgumentParser(prog='az_utils.py',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=textwrap.dedent('''\
@@ -1059,28 +1079,33 @@ Command:
 
     if args.verbose:
         verbose = args.verbose
-        print "{0}".format(args)
+        print ("{0}".format(args))
+        # print ("Merge system configuration: %s " % default_config_parameters)
+        # print ("Merge az configuration: %s " % default_az_parameters)
+        # print ("Use configuration: %s " % config)
 
     # Cluster Config
     config_cluster = os.path.join(dirpath, "azure_cluster_config.yaml")
     if os.path.exists(config_cluster):
         tmpconfig = yaml.load(open(config_cluster))
         if tmpconfig is not None:
-            merge_config(config, tmpconfig, verbose)
+            merge_config(config, tmpconfig)
 
     config_file = os.path.join(dirpath, "config.yaml")
     if os.path.exists(config_file):
         with open(config_file) as cf:
             tmpconfig = yaml.load(cf)
-            assert tmpconfig["cluster_name"] in tmpconfig["azure_cluster"]
-        merge_config(config, tmpconfig, verbose)
+            if tmpconfig["cluster_name"] not in tmpconfig["azure_cluster"]:
+                print( "In config.yaml, azure_cluster need to have a entry of %s" % tmpconfig["cluster_name"])
+                exit()
+        merge_config(config, tmpconfig)
         if tmpconfig is not None and "cluster_name" in tmpconfig:
             config["azure_cluster"]["cluster_name"] = tmpconfig["cluster_name"]
         if tmpconfig is not None and "datasource" in tmpconfig:
             config["azure_cluster"]["datasource"] = tmpconfig["datasource"]
     if tmpconfig is not None and "azure_cluster" in tmpconfig and config["azure_cluster"]["cluster_name"] in tmpconfig["azure_cluster"]:
         merge_config(config["azure_cluster"], tmpconfig["azure_cluster"][
-                     config["azure_cluster"]["cluster_name"]], verbose)
+                     config["azure_cluster"]["cluster_name"]])
     if (args.cluster_name is not None):
         config["azure_cluster"]["cluster_name"] = args.cluster_name
 

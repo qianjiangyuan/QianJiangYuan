@@ -84,6 +84,7 @@ default_config_parameters = {
 
     "render-exclude": {
         "GlusterFSUtils.pyc": True,
+        "nbconvert-extensions.tpl": True,
         "launch_glusterfs.pyc": True,
         "bootstrap_hdfs.pyc": True,
     },
@@ -707,6 +708,8 @@ scriptblocks = {
         "docker push restfulapi",
         "docker push webui",
         "mount",
+        "nginx config",
+        "nginx fqdn",
         "kubernetes start mysql",
         "kubernetes start jobmanager",
         "kubernetes start restfulapi",

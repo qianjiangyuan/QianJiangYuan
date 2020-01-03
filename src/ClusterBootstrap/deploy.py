@@ -1108,7 +1108,10 @@ def set_nfs_disk():
     nfs_servers = config["nfs_node"] if len(config["nfs_node"]) > 0 else config["etcd_node"]
     machine_name_2_full = {nm.split('.')[0]:nm for nm in nfs_servers}
     for srvr_nm, nfs_cnf in config["nfs_disk_mnt"].items():
-        nfs_cnf["cloud_config"] = {"vnet_range":config["cloud_config"]["vnet_range"], "samba_range": config["cloud_config"]["samba_range"]}
+        nfs_cnf["cloud_config"] = {}
+        for key in ["vnet_range", "samba_range"]:
+            if key in config["cloud_config"]:
+                nfs_cnf["cloud_config"][key] = config["cloud_config"][key]
         nfs_server = machine_name_2_full[srvr_nm]
         # print nfs_cnf, nfs_server
         utils.render_template("./template/nfs/nfs_config.sh.template","./deploy/scripts/setup_nfs_server.sh",nfs_cnf)
@@ -1202,11 +1205,13 @@ def update_worker_node(nodeIP):
 
     worker_ssh_user = config["admin_username"]
     utils.SSH_exec_script(config["ssh_cert"],worker_ssh_user, nodeIP, "./deploy/kubelet/%s" % config["preworkerdeploymentscript"])
-
-    if "type" not in config["machines"][nodeIP] or config["machines"][nodeIP]["type"] != "cpu":
-        deploymentlist = config["workerdeploymentlist"]
-    else:
-        deploymentlist = config["cpuworkerdeploymentlist"]
+    
+    print config['machines']
+    print nodeIP
+    # if "type" not in config["machines"][nodeIP] or config["machines"][nodeIP]["type"] != "cpu":
+    #    deploymentlist = config["workerdeploymentlist"]
+    # else:
+    deploymentlist = config["cpuworkerdeploymentlist"]
 
     with open("./deploy/kubelet/"+deploymentlist,"r") as f:
         deploy_files = [s.split(",") for s in f.readlines() if len(s.split(",")) == 2]
@@ -1373,6 +1378,7 @@ def deploy_webUI_on_node(ipAddress):
     # write into host, mounted into container
     utils.sudo_scp(config["ssh_cert"],"./deploy/WebUI/userconfig.json","/etc/WebUI/userconfig.json", sshUser, webUIIP )
     utils.sudo_scp(config["ssh_cert"],"./deploy/WebUI/configAuth.json","/etc/WebUI/configAuth.json", sshUser, webUIIP )
+    utils.sudo_scp(config["ssh_cert"],"./deploy/WebUI/local.yaml","/etc/WebUI/local.yaml", sshUser, webUIIP )
 
     # write report configuration
     masternodes = get_ETCD_master_nodes(config["clusterId"])
@@ -1988,7 +1994,11 @@ def deploy_webUI():
 
     # masterIP = config["kubernetes_master_node"][0]
     nodes = get_node_lists_for_service("webportal")
-    for node in nodes:
+    nodes_restfulapi = get_node_lists_for_service("restfulapi")
+    for i, node in enumerate(nodes):
+        node_restfulapi = nodes_restfulapi[i] if i < len(nodes_restfulapi) else nodes_restfulapi[0]
+        config["webportal_node"] = node
+        config["restfulapi_node"] = node
         deploy_webUI_on_node(node)
 
 def ufw_default_firewall_rule(node):
@@ -2946,7 +2956,9 @@ def start_one_kube_service(fname):
 
     if fname == "./deploy/services/jobmanager/jobmanager.yaml":
         # recreate the configmap dlws-scripts
-        run_kubectl( ["create configmap dlws-scripts --from-file=../Jobs_Templete/ -o yaml --dry-run | ./deploy/bin/kubectl apply -f -"] )
+        # run_kubectl( ["create configmap dlws-scripts --from-file=../Jobs_Templete/ -o yaml --dry-run | ./deploy/bin/kubectl apply -f -"] )
+        run_kubectl( ["create configmap dlws-scripts --from-file=../init-scripts/ -o yaml --dry-run | ./deploy/bin/kubectl apply -f -"] )
+        ()
 
     run_kubectl( ["create", "-f", fname ] )
 
@@ -3770,7 +3782,8 @@ def run_command( args, command, nargs, parser ):
         gen_warm_up_cluster_script()
 
     elif command == "setconfigmap":
-        os.system('./deploy/bin/kubectl create configmap dlws-scripts --from-file=../Jobs_Templete -o yaml --dry-run | ./deploy.py kubectl apply -f -')
+        # os.system('./deploy/bin/kubectl create configmap dlws-scripts --from-file=../Jobs_Templete -o yaml --dry-run | ./deploy.py kubectl apply -f -')
+        os.system('./deploy/bin/kubectl create configmap dlws-scripts --from-file=../init-scripts -o yaml --dry-run | ./deploy.py kubectl apply -f -')
 
     elif command == "download":
         if len(nargs)>=1:
